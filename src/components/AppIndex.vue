@@ -1,44 +1,68 @@
 <script setup>
-import { ref, shallowRef } from 'vue';
+import { ref, shallowRef, watch } from 'vue';
 import SVGIconButton from './elements/SVGIconButton.vue';
 import delete_icon from './elements/icons/delete_icon.vue';
-//codemirror
+import InputLabel from './elements/InputLabel.vue';
+import { getActionData, actionList } from '@/assets/osActionsData';
+//codemirror start
 import { Codemirror } from 'vue-codemirror';
 import { json } from '@codemirror/lang-json';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from 'codemirror';
-
-//CodeMirror Data
 const extensions = [json(), oneDark, EditorView.lineWrapping];
 // Codemirror EditorView instance ref
 const view = shallowRef()
 const handleReady = (payload) => {
     view.value = payload.view
 }
-
+//codemirror end
+const displayDetails = ref(false);
 const requests = ref([]); // Reactive state for requests
 const selectedRequestDetails = ref({
     input: "No Input",
     IPResult: "No IPResult",
 }); // Reactive state for details view
 
+// Watch for changes in requests array
+watch(requests, (newRequests) => {
+    // If this is the first request being added, show its details
+    if (newRequests.length === 1) {
+        showRequestDetails(newRequests[0].id);
+    }
+}, { deep: true });
+
 /**
  * Add a new request to the list.
  * @param {object} request - Network request object.
  */
 const addRequestToList = (request) => {
-    const requestId = requests.value.length; // Use index as ID
-    const extractedRequestValues = parseRequestBody(request);
-    const extractedResponseValues = {};
+    try {
+        const extractedRequestValues = parseRequestBody(request);
+        if (!extractedRequestValues) {
+            return;
+        }
+        // Check if the request's sClassName is in the actionList
+        const isAllowedAction = actionList.some(allowedAction =>
+            extractedRequestValues.sClassName.includes(allowedAction)
+        );
+        // Only add the request if it matches an allowed action
+        if (isAllowedAction) {
+            const requestId = requests.value.length; // Use index as ID
+            const extractedResponseValues = {};
 
-    requests.value.push({
-        id: requestId,
-        details: {
-            ...extractedRequestValues,
-            extractedResponseValues,
-        },
-        rawRequest: request,
-    });
+            requests.value.push({
+                id: requestId,
+                details: {
+                    ...extractedRequestValues,
+                    extractedResponseValues,
+                },
+                rawRequest: request,
+            });
+        }
+    }
+    catch (err) {
+        alert(JSON.stringify(err));
+    }
 }
 
 /**
@@ -54,6 +78,7 @@ const showRequestDetails = (requestId) => {
         request.rawRequest.getContent((responseBody) => {
             if (responseBody) {
                 const responseValues = parseResponseBody(responseBody);
+                displayDetails.value = true;
                 selectedRequestDetails.value = {
                     input: request.details.input || "No Input",
                     IPResult: responseValues.IPResult || "No IPResult",
@@ -72,6 +97,7 @@ const showRequestDetails = (requestId) => {
  * Clear all requests and reset the details view.
  */
 const clearRequests = () => {
+    displayDetails.value = false;
     requests.value = [];
     selectedRequestDetails.value = {
         input: "No Input",
@@ -86,8 +112,8 @@ const clearRequests = () => {
  */
 const parseRequestBody = (request) => {
     try {
-        const requestBody = request.request?.postData?.text || null;
-        if (!requestBody) return { input: "No Body", sClassName: "N/A", sMethodName: "N/A" };
+        const requestBody = request?.request?.postData?.text || null;
+        if (!requestBody) return null;
 
         const messageNode = parseMessageNode(requestBody);
         return extractRequestValues(messageNode);
@@ -103,10 +129,16 @@ const parseRequestBody = (request) => {
 const parseMessageNode = (formData) => {
     try {
         const params = new URLSearchParams(decodeURIComponent(formData));
+
         const messageNode = params.get("message");
-        return messageNode ? JSON.parse(messageNode) : null;
+
+        if (!messageNode) {
+            return;
+        }
+        return messageNode ? JSON?.parse(messageNode) : null;
     } catch (error) {
         console.error("Error parsing message node:", error);
+        console.log('Mostly if message item is not JSON then you can expect this, can be ignord.');
         return null;
     }
 }
@@ -121,9 +153,10 @@ const extractRequestValues = (messageNode) => {
 
     const action = messageNode.actions[0];
     const params = action.params?.params || {};
+    const actionItem = getActionData(params.sClassName);
     return {
         input: params.input || "N/A",
-        sClassName: params.sClassName || "N/A",
+        sClassName: actionItem.actionLabel || "N/A",
         sMethodName: params.sMethodName || "N/A",
     };
 }
@@ -168,28 +201,28 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
         <!-- Main Content -->
         <div class="flex flex-grow overflow-hidden" v-if="requests.length > 0">
             <!-- Request List -->
-            <div class="w-1/3 border-r bg-gray-50 overflow-auto">
+            <div class="w-1/4 border-r bg-gray-50 overflow-auto">
                 <ul class="p-4 space-y-2">
                     <li v-for="request in requests" :key="request.id"
                         class="p-2 border bg-white rounded shadow-sm hover:bg-gray-100 cursor-pointer"
                         @click="showRequestDetails(request.id)">
-                        sClassName: {{ request.details.sClassName || "N/A" }} <br>
-                        sMethodName: {{ request.details.sMethodName || "N/A" }}
+                        Action : {{ request.details.sClassName || "N/A" }} <br>
+                        Element : {{ request.details.sMethodName || "N/A" }}
                     </li>
                 </ul>
             </div>
 
             <!-- Details Section -->
-            <div class="w-2/3 p-4 overflow-auto">
+            <div class="w-3/4 p-4 overflow-auto" v-if="displayDetails">
                 <div class="mb-4">
-                    <h3 class="font-bold text-xl mb-2">Input:</h3>
+                    <InputLabel>Input :</InputLabel>
                     <codemirror v-model="selectedRequestDetails.input" placeholder="Your data will appear here"
                         :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden', marginTop: '7px' }"
                         :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions"
                         @ready="handleReady" />
                 </div>
                 <div>
-                    <h3 class="font-bold text-xl mb-2">IPResult:</h3>
+                    <InputLabel>Output :</InputLabel>
                     <codemirror v-model="selectedRequestDetails.IPResult" placeholder="Your data will appear here"
                         :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden', marginTop: '7px' }"
                         :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions"

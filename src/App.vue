@@ -16,7 +16,6 @@ export default {
   }
 }
 
-console.log('Testing Extension');
 </script>
 
 <style>
