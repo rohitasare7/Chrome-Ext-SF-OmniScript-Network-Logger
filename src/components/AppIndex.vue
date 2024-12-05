@@ -220,7 +220,7 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
     <div class="h-screen flex flex-col dark:bg-gray-800">
         <div class="p-2 bg-gray-100 border-b dark:border-gray-700 flex space-x-4 items-center dark:bg-gray-800">
             <TextInput v-model="searchQuery" placeholder="Search by Action or Element"
-                class="text-xs w-48 !py-1.5 text-gray-700" />
+                class="text-xs w-48 !py-1.5 text-gray-700 ml-2" />
             <select v-model="selectedFilterAction"
                 class="text-xs py-1.5 px-2 block w-48 text-gray-700 border border-gray-300 shadow-sm rounded-md focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400 dark:placeholder-gray-500 dark:focus:ring-gray-600 outline-indigo-500 dark:outline-none">
                 <option value="All">All Actions</option>
