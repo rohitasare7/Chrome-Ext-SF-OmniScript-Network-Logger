@@ -31,6 +31,9 @@ watch(requests, (newRequests) => {
     }
 }, { deep: true });
 
+//vars
+const selectedRequestId = ref(null);
+
 /**
  * Add a new request to the list.
  * @param {object} request - Network request object.
@@ -70,6 +73,7 @@ const addRequestToList = (request) => {
  * @param {number} requestId - Index of the selected request.
  */
 const showRequestDetails = (requestId) => {
+    selectedRequestId.value = requestId; // Set the selected request ID
     const request = requests.value.find((req) => req.id === requestId);
     if (!request) return;
 
@@ -82,6 +86,7 @@ const showRequestDetails = (requestId) => {
                 selectedRequestDetails.value = {
                     input: request.details.input || "No Input",
                     IPResult: responseValues.IPResult || "No IPResult",
+                    elementName : request.details.sMethodName,
                 };
             }
         });
@@ -154,8 +159,9 @@ const extractRequestValues = (messageNode) => {
     const action = messageNode.actions[0];
     const params = action.params?.params || {};
     const actionItem = getActionData(params.sClassName);
+    const beautifiedInput = JSON.stringify(JSON.parse(params.input), null, 4);
     return {
-        input: params.input || "N/A",
+        input: beautifiedInput || "N/A",
         sClassName: actionItem.actionLabel || "N/A",
         sMethodName: params.sMethodName || "N/A",
     };
@@ -175,7 +181,7 @@ const parseResponseBody = (responseBody) => {
             ? JSON.parse(returnValue.returnValue)
             : {};
         return {
-            IPResult: JSON.stringify(parsedReturnValue.IPResult || "No IPResult found", null, 2),
+            IPResult: JSON.stringify(parsedReturnValue.IPResult || "No IPResult found", null, 2), // do this only for IP
             error: parsedReturnValue.error || "No error",
         };
     } catch (error) {
@@ -204,7 +210,8 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
             <div class="w-1/4 border-r bg-gray-50 overflow-auto">
                 <ul class="p-4 space-y-2">
                     <li v-for="request in requests" :key="request.id"
-                        class="p-2 border bg-white rounded shadow-sm hover:bg-gray-100 cursor-pointer"
+                        class="p-2 border rounded shadow-sm cursor-pointer"
+                        :class="{ 'bg-blue-300': selectedRequestId === request.id, 'bg-white' : selectedRequestId != request.id }"
                         @click="showRequestDetails(request.id)">
                         Action : {{ request.details.sClassName || "N/A" }} <br>
                         Element : {{ request.details.sMethodName || "N/A" }}
@@ -214,6 +221,7 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
 
             <!-- Details Section -->
             <div class="w-3/4 p-4 overflow-auto" v-if="displayDetails">
+                <InputLabel>Element : {{ selectedRequestDetails.elementName }}</InputLabel>
                 <div class="mb-4">
                     <InputLabel>Input :</InputLabel>
                     <codemirror v-model="selectedRequestDetails.input" placeholder="Your data will appear here"
