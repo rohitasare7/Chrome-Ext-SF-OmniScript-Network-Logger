@@ -5,6 +5,7 @@ import delete_icon from './elements/icons/delete_icon.vue';
 import InputLabel from './elements/InputLabel.vue';
 import TextInput from './elements/TextInput.vue';
 import { getActionData, actionList } from '@/assets/osActionsData';
+import ToggleLightDarkMode from './elements/ToggleLightDarkMode.vue';
 //codemirror start
 import { Codemirror } from 'vue-codemirror';
 import { json } from '@codemirror/lang-json';
@@ -215,12 +216,13 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
 </script>
 
 <template>
-
-    <div class="h-screen flex flex-col">
-        <div class="p-2 bg-gray-100 border-b flex space-x-4 items-center">
-            <TextInput v-model="searchQuery" placeholder="Search by Action or Element" class="text-xs w-48 !py-1.5 text-gray-700" />
+    <!-- <ToggleLightDarkMode /> -->
+    <div class="h-screen flex flex-col dark:bg-gray-800">
+        <div class="p-2 bg-gray-100 border-b dark:border-gray-700 flex space-x-4 items-center dark:bg-gray-800">
+            <TextInput v-model="searchQuery" placeholder="Search by Action or Element"
+                class="text-xs w-48 !py-1.5 text-gray-700" />
             <select v-model="selectedFilterAction"
-                class="text-xs py-1.5 px-2 block w-48 text-gray-700 border border-gray-300 shadow-sm rounded-md focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 outline-indigo-500 dark:outline-none">
+                class="text-xs py-1.5 px-2 block w-48 text-gray-700 border border-gray-300 shadow-sm rounded-md focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400 dark:placeholder-gray-500 dark:focus:ring-gray-600 outline-indigo-500 dark:outline-none">
                 <option value="All">All Actions</option>
                 <option v-for="action in [...new Set(requests.map(req => req.details.sClassName))]" :key="action"
                     :value="action">
@@ -232,13 +234,13 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
         </div>
 
         <!-- Main Content -->
-        <div class="flex flex-grow overflow-hidden" v-if="requests.length > 0">
+        <div class="flex flex-grow overflow-hidden dark:bg-gray-800" v-if="requests.length > 0">
             <!-- Request List -->
-            <div class="w-1/4 border-r bg-gray-50 overflow-auto">
+            <div class="w-1/4 border-r dark:border-gray-700 bg-gray-50 overflow-auto dark:bg-gray-800">
                 <ul class="p-4 space-y-2">
                     <li v-for="request in filteredRequests" :key="request.id"
-                        class="p-2 border rounded shadow-sm cursor-pointer"
-                        :class="{ 'bg-blue-300': selectedRequestId === request.id, 'bg-white': selectedRequestId != request.id }"
+                        class="p-2 border rounded shadow-sm cursor-pointer text-gray-800 dark:text-gray-400 dark:border-gray-700 "
+                        :class="{ 'bg-blue-300 dark:bg-gray-900 dark:border-gray-700 dark:shadow-lg': selectedRequestId === request.id, 'bg-white dark:bg-gray-700 dark:border-gray-600': selectedRequestId != request.id }"
                         @click="showRequestDetails(request.id)">
                         Action : {{ request.details.sClassName || "N/A" }} <br>
                         Element : {{ request.details.sMethodName || "N/A" }}
