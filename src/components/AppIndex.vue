@@ -1,8 +1,9 @@
 <script setup>
-import { ref, shallowRef, watch } from 'vue';
+import { ref, shallowRef, watch, computed } from 'vue';
 import SVGIconButton from './elements/SVGIconButton.vue';
 import delete_icon from './elements/icons/delete_icon.vue';
 import InputLabel from './elements/InputLabel.vue';
+import TextInput from './elements/TextInput.vue';
 import { getActionData, actionList } from '@/assets/osActionsData';
 //codemirror start
 import { Codemirror } from 'vue-codemirror';
@@ -86,7 +87,7 @@ const showRequestDetails = (requestId) => {
                 selectedRequestDetails.value = {
                     input: request.details.input || "No Input",
                     IPResult: responseValues.IPResult || "No IPResult",
-                    elementName : request.details.sMethodName,
+                    elementName: request.details.sMethodName,
                 };
             }
         });
@@ -97,6 +98,24 @@ const showRequestDetails = (requestId) => {
         };
     }
 }
+
+// Search and filter state
+const searchQuery = ref('');
+const selectedFilterAction = ref('All');
+
+// Filtered and searched requests
+const filteredRequests = computed(() => {
+    return requests.value.filter(request => {
+        const matchesSearch =
+            request.details.sClassName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            request.details.sMethodName.toLowerCase().includes(searchQuery.value.toLowerCase());
+        const matchesFilter =
+            selectedFilterAction.value === 'All' ||
+            request.details.sClassName === selectedFilterAction.value;
+
+        return matchesSearch && matchesFilter;
+    });
+});
 
 /**
  * Clear all requests and reset the details view.
@@ -198,8 +217,16 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
 <template>
 
     <div class="h-screen flex flex-col">
-        <!-- Clear Requests Button -->
-        <div class="p-1 bg-gray-100 border-b">
+        <div class="p-2 bg-gray-100 border-b flex space-x-4 items-center">
+            <TextInput v-model="searchQuery" placeholder="Search by Action or Element" class="text-xs w-48 !py-1.5 text-gray-700" />
+            <select v-model="selectedFilterAction"
+                class="text-xs py-1.5 px-2 block w-48 text-gray-700 border border-gray-300 shadow-sm rounded-md focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 outline-indigo-500 dark:outline-none">
+                <option value="All">All Actions</option>
+                <option v-for="action in [...new Set(requests.map(req => req.details.sClassName))]" :key="action"
+                    :value="action">
+                    {{ action }}
+                </option>
+            </select>
             <SVGIconButton @click="clearRequests" :icon="delete_icon" :isSquare="false" color="red"
                 title="Clear All Requests" class="mr-2" />
         </div>
@@ -209,9 +236,9 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
             <!-- Request List -->
             <div class="w-1/4 border-r bg-gray-50 overflow-auto">
                 <ul class="p-4 space-y-2">
-                    <li v-for="request in requests" :key="request.id"
+                    <li v-for="request in filteredRequests" :key="request.id"
                         class="p-2 border rounded shadow-sm cursor-pointer"
-                        :class="{ 'bg-blue-300': selectedRequestId === request.id, 'bg-white' : selectedRequestId != request.id }"
+                        :class="{ 'bg-blue-300': selectedRequestId === request.id, 'bg-white': selectedRequestId != request.id }"
                         @click="showRequestDetails(request.id)">
                         Action : {{ request.details.sClassName || "N/A" }} <br>
                         Element : {{ request.details.sMethodName || "N/A" }}
@@ -239,7 +266,7 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
             </div>
         </div>
         <div class="p-4 space-y-2" v-else>
-            <p>No requests found.</p>
+            <InputLabel>No requests found.</InputLabel>
         </div>
     </div>
 </template>
