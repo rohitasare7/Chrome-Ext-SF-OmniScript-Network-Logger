@@ -4,83 +4,69 @@ import SVGIconButton from './elements/SVGIconButton.vue';
 import delete_icon from './elements/icons/delete_icon.vue';
 import InputLabel from './elements/InputLabel.vue';
 import TextInput from './elements/TextInput.vue';
-import { getActionData, actionList } from '@/assets/osActionsData';
+import { parseRequestBody, parseResponseBody } from '@/assets/osUtility';
+import {  actionList } from '@/assets/osActionsData';
 import ToggleLightDarkMode from './elements/ToggleLightDarkMode.vue';
-//codemirror start
+// Codemirror imports
 import { Codemirror } from 'vue-codemirror';
 import { json } from '@codemirror/lang-json';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView } from 'codemirror';
+
 const extensions = [json(), oneDark, EditorView.lineWrapping];
+
 // Codemirror EditorView instance ref
-const view = shallowRef()
+const view = shallowRef();
 const handleReady = (payload) => {
-    view.value = payload.view
-}
-//codemirror end
+    view.value = payload.view;
+};
+
 const displayDetails = ref(false);
-const requests = ref([]); // Reactive state for requests
+const requests = ref([]);
 const selectedRequestDetails = ref({
     input: "No Input",
     IPResult: "No IPResult",
-}); // Reactive state for details view
+});
 
-// Watch for changes in requests array
 watch(requests, (newRequests) => {
-    // If this is the first request being added, show its details
     if (newRequests.length === 1) {
         showRequestDetails(newRequests[0].id);
     }
 }, { deep: true });
 
-//vars
 const selectedRequestId = ref(null);
 
-/**
- * Add a new request to the list.
- * @param {object} request - Network request object.
- */
 const addRequestToList = (request) => {
     try {
         const extractedRequestValues = parseRequestBody(request);
-        if (!extractedRequestValues) {
-            return;
-        }
-        // Check if the request's sClassName is in the actionList
+        if (!extractedRequestValues) return;
+
         const isAllowedAction = actionList.some(allowedAction =>
             extractedRequestValues.sClassName.includes(allowedAction)
         );
-        // Only add the request if it matches an allowed action
-        if (isAllowedAction) {
-            const requestId = requests.value.length; // Use index as ID
-            const extractedResponseValues = {};
 
+        if (isAllowedAction) {
+            const requestId = requests.value.length;
             requests.value.push({
                 id: requestId,
                 details: {
                     ...extractedRequestValues,
-                    extractedResponseValues,
+                    extractedResponseValues: {},
                 },
                 rawRequest: request,
             });
         }
-    }
-    catch (err) {
+    } catch (err) {
         alert(JSON.stringify(err));
     }
-}
+};
 
-/**
- * Display details for a selected request.
- * @param {number} requestId - Index of the selected request.
- */
 const showRequestDetails = (requestId) => {
-    selectedRequestId.value = requestId; // Set the selected request ID
+    selectedRequestId.value = requestId;
     const request = requests.value.find((req) => req.id === requestId);
     if (!request) return;
 
     try {
-        // Parse response body asynchronously
         request.rawRequest.getContent((responseBody) => {
             if (responseBody) {
                 const responseValues = parseResponseBody(responseBody);
@@ -98,13 +84,11 @@ const showRequestDetails = (requestId) => {
             IPResult: error.message || "No IPResult",
         };
     }
-}
+};
 
-// Search and filter state
 const searchQuery = ref('');
 const selectedFilterAction = ref('All');
 
-// Filtered and searched requests
 const filteredRequests = computed(() => {
     return requests.value.filter(request => {
         const matchesSearch =
@@ -118,9 +102,6 @@ const filteredRequests = computed(() => {
     });
 });
 
-/**
- * Clear all requests and reset the details view.
- */
 const clearRequests = () => {
     displayDetails.value = false;
     requests.value = [];
@@ -128,87 +109,7 @@ const clearRequests = () => {
         input: "No Input",
         IPResult: "No IPResult",
     };
-}
-
-/**
- * Parse the request body to extract relevant details.
- * @param {object} request - Network request object.
- * @returns {object} Extracted values.
- */
-const parseRequestBody = (request) => {
-    try {
-        const requestBody = request?.request?.postData?.text || null;
-        if (!requestBody) return null;
-
-        const messageNode = parseMessageNode(requestBody);
-        return extractRequestValues(messageNode);
-    } catch (error) {
-        console.error("Error extracting request details:", error);
-        return { input: "Error parsing request", sClassName: "N/A", sMethodName: "N/A" };
-    }
-}
-
-/**
- * Decode and parse form data payload to extract the `message` node as JSON.
- */
-const parseMessageNode = (formData) => {
-    try {
-        const params = new URLSearchParams(decodeURIComponent(formData));
-
-        const messageNode = params.get("message");
-
-        if (!messageNode) {
-            return;
-        }
-        return messageNode ? JSON?.parse(messageNode) : null;
-    } catch (error) {
-        console.error("Error parsing message node:", error);
-        console.log('Mostly if message item is not JSON then you can expect this, can be ignord.');
-        return null;
-    }
-}
-
-/**
- * Extract relevant values from the parsed message node.
- */
-const extractRequestValues = (messageNode) => {
-    if (!messageNode || !messageNode.actions?.length) {
-        return { input: "N/A", sClassName: "N/A", sMethodName: "N/A" };
-    }
-
-    const action = messageNode.actions[0];
-    const params = action.params?.params || {};
-    const actionItem = getActionData(params.sClassName);
-    const beautifiedInput = JSON.stringify(JSON.parse(params.input), null, 4);
-    return {
-        input: beautifiedInput || "N/A",
-        sClassName: actionItem.actionLabel || "N/A",
-        sMethodName: params.sMethodName || "N/A",
-    };
-}
-
-/**
- * Parse the response body and extract values.
- */
-const parseResponseBody = (responseBody) => {
-    try {
-        const parsedResponse = JSON.parse(responseBody);
-        const actions = parsedResponse.actions || [];
-        if (!actions.length) return { IPResult: "No IPResult found", error: "No error" };
-
-        const returnValue = actions[0].returnValue || {};
-        const parsedReturnValue = returnValue.returnValue
-            ? JSON.parse(returnValue.returnValue)
-            : {};
-        return {
-            IPResult: JSON.stringify(parsedReturnValue.IPResult || "No IPResult found", null, 2), // do this only for IP
-            error: parsedReturnValue.error || "No error",
-        };
-    } catch (error) {
-        console.error("Error parsing response body:", error);
-        return { IPResult: "Error parsing response body", error: "No error" };
-    }
-}
+};
 
 // Listen to Chrome DevTools Network events
 /* eslint-disable */
