@@ -4,6 +4,7 @@ import SVGIconButton from './elements/SVGIconButton.vue';
 import delete_icon from './elements/icons/delete_icon.vue';
 import InputLabel from './elements/InputLabel.vue';
 import TextInput from './elements/TextInput.vue';
+import CopyButton from './elements/CopyButton.vue';
 import { parseRequestBody, parseResponseBody } from '@/assets/osUtility';
 import { actionList } from '@/assets/osUtility';
 import ToggleLightDarkMode from './elements/ToggleLightDarkMode.vue';
@@ -121,7 +122,7 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
 </script>
 
 <template>
-    <!-- <ToggleLightDarkMode /> -->
+    <ToggleLightDarkMode />
     <div class="h-screen flex flex-col dark:bg-gray-800">
         <div class="p-2 bg-gray-100 border-b dark:border-gray-700 flex space-x-4 items-center dark:bg-gray-800">
             <TextInput v-model="searchQuery" placeholder="Search by Action or Element"
@@ -156,26 +157,45 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
             <!-- Details Section -->
             <div class="w-3/4 p-4 overflow-auto" v-if="displayDetails">
                 <InputLabel>Element : {{ selectedRequestDetails.elementName }}</InputLabel>
-                <div class="mb-4">
-                    <InputLabel>Input :</InputLabel>
-                    <codemirror v-model="selectedRequestDetails.input" placeholder="Your data will appear here"
-                        :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden', marginTop: '7px' }"
-                        :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions"
-                        @ready="handleReady" />
+                <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4 mt-2">
+                    <!-- Input Editor -->
+                    <div class="w-full mr-3 lg:w-1/2">
+                        <div class="flex justify-between">
+                            <InputLabel>Input :</InputLabel>
+                            <CopyButton :copyValue="selectedRequestDetails.input" class="mr-2" />
+                        </div>
+                        <div class="dark:border dark:border-gray-600 rounded-md mt-2">
+                            <codemirror v-model="selectedRequestDetails.input" placeholder="Your data will appear here"
+                                :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden' }" :autofocus="true"
+                                :indent-with-tab="true" :tab-size="2" :extensions="extensions" @ready="handleReady" />
+                        </div>
+
+                    </div>
+                    <!-- Output Editor -->
+                    <div class="w-full mr-3 lg:w-1/2">
+                        <div class="flex justify-between">
+                            <InputLabel>Output :</InputLabel>
+                            <CopyButton :copyValue="selectedRequestDetails.IPResult" class="mr-2" />
+                        </div>
+                        <div class="dark:border dark:border-gray-600 rounded-md mt-2">
+                            <codemirror v-model="selectedRequestDetails.IPResult"
+                                placeholder="Your data will appear here"
+                                :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden' }" :autofocus="true"
+                                :indent-with-tab="true" :tab-size="2" :extensions="extensions" @ready="handleReady" />
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <InputLabel>Output :</InputLabel>
-                    <codemirror v-model="selectedRequestDetails.IPResult" placeholder="Your data will appear here"
-                        :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden', marginTop: '7px' }"
-                        :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions"
-                        @ready="handleReady" />
-                </div>
-                <div>
-                    <InputLabel>Options :</InputLabel>
-                    <codemirror v-model="selectedRequestDetails.options" placeholder="Your data will appear here"
-                        :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden', marginTop: '7px' }"
-                        :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions"
-                        @ready="handleReady" />
+                <!-- Options Editor -->
+                <div class="mt-4">
+                    <div class="flex justify-between">
+                        <InputLabel>Options :</InputLabel>
+                        <CopyButton :copyValue="selectedRequestDetails.options" class="mr-2" />
+                    </div>
+                    <div class="dark:border dark:border-gray-600 rounded-md mt-2">
+                        <codemirror v-model="selectedRequestDetails.options" placeholder="Your data will appear here"
+                            :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden' }" :autofocus="true"
+                            :indent-with-tab="true" :tab-size="2" :extensions="extensions" @ready="handleReady" />
+                    </div>
                 </div>
             </div>
         </div>
