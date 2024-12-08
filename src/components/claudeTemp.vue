@@ -65,7 +65,7 @@ const identifyActionSource = (action) => {
   const options = safeParseJSON(innerParams?.options || '{}')
   const vlcClass = options?.vlcClass || ''
   const className = params?.classname || ''
-  
+
   if (className === 'FlexRuntime') {
     return ACTION_TYPES.FLEXCARD
   }
@@ -78,7 +78,7 @@ const identifyActionSource = (action) => {
   else if (vlcClass && !vlcClass.includes('vlocity_cmt')) {
     return ACTION_TYPES.REMOTE_ACTION
   }
-  
+
   return 'Unknown'
 }
 
@@ -88,7 +88,7 @@ const extractActionDetails = (action) => {
   const params = action?.params || {};
   const innerParams = params?.params || {};
   const actionSource = identifyActionSource(action); // Function that identifies the source of the action
-console.log('actionSource --> '+actionSource);
+  console.log('actionSource --> ' + actionSource);
   // Initialize the details object to store parsed action details
   let details = {
     actionType: actionSource,
@@ -100,7 +100,7 @@ console.log('actionSource --> '+actionSource);
   details.className = actionSource;
   // Switch based on the identified action source
   switch (actionSource) {
-    
+
     case ACTION_TYPES.DATA_RAPTOR: {
       // Parse the input for DataRaptor and handle it
       const drInput = safeParseJSON(innerParams.input); // Safe parse JSON input for DataRaptor
@@ -114,6 +114,7 @@ console.log('actionSource --> '+actionSource);
     case ACTION_TYPES.FLEXCARD: {
       // Parse the dataSourceMap for FlexCard and handle it
       const dsMap = safeParseJSON(innerParams.dataSourceMap || '{}'); // Parse DataSource Map
+      console.log('dsMap.type --> '+dsMap.type);
       if (dsMap.type === 'IntegrationProcedures') {
         // If type is IntegrationProcedures, extract values
         details.methodName = dsMap.value.ipMethod;
@@ -149,14 +150,14 @@ console.log('actionSource --> '+actionSource);
       // Handle any unknown action types if needed
       break;
   }
-  console.log('details --> '+JSON.stringify(details));
+  console.log('details --> ' + JSON.stringify(details));
   // Return the collected details
   return details;
 };
 // Computed property to process all actions in the response
 const processedActions = computed(() => {
   if (!parsedResponse.value) return []
-  
+
   const actions = parsedResponse.value?.actions || []
   return actions.map(action => extractActionDetails(action))
 })
@@ -184,7 +185,7 @@ const getBadgeColor = (actionType, drType) => {
       default: return 'bg-gray-500'
     }
   }
-  
+
   switch (actionType) {
     case ACTION_TYPES.INTEGRATION_PROCEDURE: return 'bg-blue-500'
     case ACTION_TYPES.REMOTE_ACTION: return 'bg-orange-500'
@@ -198,29 +199,20 @@ const getBadgeColor = (actionType, drType) => {
   <div class="omnistudio-action-parser">
     <div class="input-section">
       <h2 class="text-xl font-bold mb-4">OmniStudio Action Parser</h2>
-      
-      <textarea
-        v-model="jsonInput"
-        placeholder="Paste your JSON here..."
-        class="w-full h-48 p-2 border rounded-md font-mono text-sm mb-4"
-      ></textarea>
-      
+
+      <textarea v-model="jsonInput" placeholder="Paste your JSON here..."
+        class="w-full h-48 p-2 border rounded-md font-mono text-sm mb-4"></textarea>
+
       <div class="flex gap-4 mb-4">
-        <button
-          @click="parseJsonInput"
-          class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        >
+        <button @click="parseJsonInput" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
           Parse JSON
         </button>
-        
-        <button
-          @click="clearAll"
-          class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-        >
+
+        <button @click="clearAll" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
           Clear
         </button>
       </div>
-      
+
       <div v-if="errorMessage" class="text-red-500 mb-4">
         {{ errorMessage }}
       </div>
@@ -228,7 +220,7 @@ const getBadgeColor = (actionType, drType) => {
 
     <div v-if="processedActions.length" class="results-section">
       <h3 class="text-lg font-bold mb-4">Parsed Results:</h3>
-      
+
       <div v-for="(action, index) in processedActions" :key="index" class="action-item">
         <div class="action-header">
           <div class="flex gap-2 items-center">
@@ -240,23 +232,23 @@ const getBadgeColor = (actionType, drType) => {
             </span>
           </div>
         </div>
-        
+
         <div class="action-details">
           <div class="detail-row">
             <strong>Action:</strong> {{ action.className }}
           </div>
           <div class="detail-row">
-            <strong>Element:</strong> 
+            <strong>Element:</strong>
             {{ action.methodName }}
           </div>
-          
+
           <div class="detail-section">
             <h4 class="detail-title">
               {{ action.actionType === ACTION_TYPES.DATA_RAPTOR ? 'DR Params' : 'Inputs' }}:
             </h4>
             <pre class="json-display">{{ formatJson(action.inputs) }}</pre>
           </div>
-          
+
           <div class="detail-section">
             <h4 class="detail-title">Options:</h4>
             <pre class="json-display">{{ formatJson(action.options) }}</pre>

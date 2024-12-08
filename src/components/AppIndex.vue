@@ -5,7 +5,7 @@ import delete_icon from './elements/icons/delete_icon.vue';
 import InputLabel from './elements/InputLabel.vue';
 import TextInput from './elements/TextInput.vue';
 import { parseRequestBody, parseResponseBody } from '@/assets/osUtility';
-import {  actionList } from '@/assets/osActionsData';
+import { actionList } from '@/assets/osUtility';
 import ToggleLightDarkMode from './elements/ToggleLightDarkMode.vue';
 // Codemirror imports
 import { Codemirror } from 'vue-codemirror';
@@ -39,12 +39,13 @@ const selectedRequestId = ref(null);
 const addRequestToList = (request) => {
     try {
         const extractedRequestValues = parseRequestBody(request);
+        console.log('extractedRequestValues --> ' + JSON.stringify(extractedRequestValues));
         if (!extractedRequestValues) return;
 
         const isAllowedAction = actionList.some(allowedAction =>
             extractedRequestValues.sClassName.includes(allowedAction)
         );
-
+        console.log('isAllowedAction --> ' + isAllowedAction);
         if (isAllowedAction) {
             const requestId = requests.value.length;
             requests.value.push({
@@ -56,6 +57,7 @@ const addRequestToList = (request) => {
                 rawRequest: request,
             });
         }
+        // console.log('requests --> '+requests.value);
     } catch (err) {
         alert(JSON.stringify(err));
     }
@@ -69,11 +71,13 @@ const showRequestDetails = (requestId) => {
     try {
         request.rawRequest.getContent((responseBody) => {
             if (responseBody) {
-                const responseValues = parseResponseBody(responseBody);
+                //console.log('request --> '+JSON.stringify(request.details));
+                const responseValues = parseResponseBody(responseBody, request.details.sClassName);
                 displayDetails.value = true;
                 selectedRequestDetails.value = {
                     input: request.details.input || "No Input",
                     IPResult: responseValues.IPResult || "No IPResult",
+                    options: request.details.options || "No IPResult",
                     elementName: request.details.sMethodName,
                 };
             }
@@ -162,6 +166,13 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
                 <div>
                     <InputLabel>Output :</InputLabel>
                     <codemirror v-model="selectedRequestDetails.IPResult" placeholder="Your data will appear here"
+                        :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden', marginTop: '7px' }"
+                        :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions"
+                        @ready="handleReady" />
+                </div>
+                <div>
+                    <InputLabel>Options :</InputLabel>
+                    <codemirror v-model="selectedRequestDetails.options" placeholder="Your data will appear here"
                         :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden', marginTop: '7px' }"
                         :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions"
                         @ready="handleReady" />
