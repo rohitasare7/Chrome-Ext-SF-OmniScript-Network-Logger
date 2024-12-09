@@ -7,7 +7,7 @@ import TextInput from './elements/TextInput.vue';
 import CopyButton from './elements/CopyButton.vue';
 import { parseRequestBody, parseResponseBody } from '@/assets/osUtility';
 import { actionList } from '@/assets/osUtility';
-import ToggleLightDarkMode from './elements/ToggleLightDarkMode.vue';
+// import ToggleLightDarkMode from './elements/ToggleLightDarkMode.vue';
 // Codemirror imports
 import { Codemirror } from 'vue-codemirror';
 import { json } from '@codemirror/lang-json';
@@ -122,7 +122,7 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
 </script>
 
 <template>
-    <ToggleLightDarkMode />
+    <!-- <ToggleLightDarkMode /> -->
     <div class="h-screen flex flex-col dark:bg-gray-800">
         <div class="p-2 bg-gray-100 border-b dark:border-gray-700 flex space-x-4 items-center dark:bg-gray-800">
             <TextInput v-model="searchQuery" placeholder="Search by Action or Element"
@@ -145,8 +145,8 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
             <div class="w-1/4 border-r dark:border-gray-700 bg-gray-50 overflow-auto dark:bg-gray-800">
                 <ul class="p-4 space-y-2">
                     <li v-for="request in filteredRequests" :key="request.id"
-                        class="p-2 border rounded shadow-sm cursor-pointer text-gray-800 dark:text-gray-400 dark:border-gray-700 "
-                        :class="{ 'bg-blue-300 dark:bg-gray-900 dark:border-gray-700 dark:shadow-lg': selectedRequestId === request.id, 'bg-white dark:bg-gray-700 dark:border-gray-600': selectedRequestId != request.id }"
+                        class="p-2 border rounded-md cursor-pointer text-gray-800 dark:text-gray-400 dark:border-gray-700 "
+                        :class="{ 'bg-blue-700 text-white dark:bg-gray-900 dark:border-gray-700 shadow-xl': selectedRequestId === request.id, 'bg-white dark:bg-gray-700 dark:border-gray-600 shadow-sm': selectedRequestId != request.id }"
                         @click="showRequestDetails(request.id)">
                         Action : {{ request.details.sClassName || "N/A" }} <br>
                         Element : {{ request.details.sMethodName || "N/A" }}

@@ -1,7 +1,5 @@
 <template>
-
-    <AppIndex />
-  
+  <AppIndex />
 </template>
 
 <script>

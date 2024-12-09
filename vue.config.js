@@ -6,13 +6,7 @@ module.exports = defineConfig({
       entry: './src/main.js',
       template: 'public/index.html',
       title: 'Home',
-      chunks : ['chunk-vendors','chunk-common','index']
-    },
-    'panel': {
-      entry: './src/SecondaryPage.js',
-      template: 'public/panel.html',
-      title: 'Panel',
-      chunks : ['chunk-vendors','chunk-common','panel']
-    },
+      chunks: ['chunk-vendors', 'chunk-common', 'index']
+    }
   }
 })
