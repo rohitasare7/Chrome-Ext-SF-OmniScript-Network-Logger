@@ -49,28 +49,30 @@ const addRequestToList = (request) => {
     const messageNode = NetworkParser.parseMessageNode(requestBody);
     if (!messageNode?.actions?.length) return;
 
-    const extractedValues = ActionExtractor.extractActionDetails(messageNode.actions[0]);
-    
-    //allow only specific actions
-    if(!extractedValues || !extractedValues?.className) return;
-    if (!Object.values(ACTION_TYPES).includes(extractedValues?.className)) return;
-    //filter bad requests, methods
-    // if (Object.values(IGNORED_ACTIONS).includes(extractedValues.methodName)) return;
-    //Actual Data
-    console.log('extractedValues --> ' + JSON.stringify(extractedValues));
-    const requestId = requests.value.length;
-    requests.value.push({
-      id: requestId,
-      details: {
-        ...extractedValues,
-        extractedResponseValues: {}
-      },
-      rawRequest: request
+    messageNode.actions.forEach((action, index) => {
+      const extractedValues = ActionExtractor.extractActionDetails(action);
+      
+      // Allow only specific actions
+      if (!extractedValues || !extractedValues?.className) return;
+      if (!Object.values(ACTION_TYPES).includes(extractedValues?.className)) return;
+      
+      console.log(`extractedValues [${index}] --> ` + JSON.stringify(extractedValues));
+      
+      const requestId = requests.value.length;
+      requests.value.push({
+        id: requestId,
+        details: {
+          ...extractedValues,
+          extractedResponseValues: {}
+        },
+        rawRequest: request
+      });
     });
   } catch (error) {
     console.error('Failed to add request:', error);
   }
 };
+
 
 const showRequestDetails = async (requestId) => {
   selectedRequestId.value = requestId;
@@ -81,9 +83,10 @@ const showRequestDetails = async (requestId) => {
     const responseBody = await new Promise((resolve) => {
       request.rawRequest.getContent(resolve);
     });
-
+    
     if (responseBody) {
       const parsedResponse = NetworkParser.safeParseJSON(responseBody);
+      console.log('parsedResponse.actions --> '+JSON.stringify(parsedResponse.actions));
       const returnValue = parsedResponse.actions?.[0]?.returnValue;
       const parsedReturnValue = returnValue?.returnValue ?
       NetworkParser.safeParseJSON(returnValue.returnValue) : {};
