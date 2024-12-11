@@ -5,8 +5,7 @@ import delete_icon from './elements/icons/delete_icon.vue';
 import InputLabel from './elements/InputLabel.vue';
 import TextInput from './elements/TextInput.vue';
 import CopyButton from './elements/CopyButton.vue';
-import { parseRequestBody, parseResponseBody } from '@/assets/osUtility';
-import { actionList } from '@/assets/osUtility';
+import ToastList from './elements/ToastList.vue';
 import { NetworkParser } from '@/assets/util/parser';
 import { ActionExtractor } from '@/assets/util/actionExtractor';
 import { ACTION_TYPES } from '@/assets/util/constants';
@@ -136,7 +135,9 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
 
 <template>
   <!-- <ToggleLightDarkMode /> -->
-  <div class="h-screen flex flex-col dark:bg-gray-800">
+  <ToastList />
+
+  <div class="h-screen flex flex-col dark:bg-gray-800 z-10">
     <div class="p-2 bg-gray-100 border-b dark:border-gray-700 flex space-x-4 items-center dark:bg-gray-800">
       <TextInput v-model="searchQuery" placeholder="Search by Action or Element"
         class="text-xs w-48 !py-1.5 text-gray-700 ml-2" />
@@ -150,7 +151,6 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
       </select>
       <SVGIconButton @click="clearRequests" :icon="delete_icon" :isSquare="false" color="red" title="Clear All Requests"
         class="mr-2" />
-
     </div>
 
     <!-- Main Content -->
