@@ -99,7 +99,7 @@ export class ActionExtractor {
             className: ACTION_TYPES.FLEXCARD,
             methodName: innerParams?.globalKey,
             inputs: NetworkParser.safeParseJSON(innerParams?.scope),
-            options: null,
+            options: "No Output",
           };
         }
         //return baseDetails;

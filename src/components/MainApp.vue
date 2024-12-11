@@ -87,7 +87,7 @@ const showRequestDetails = async (requestId) => {
 
     if (responseBody) {
       const parsedResponse = NetworkParser.safeParseJSON(responseBody);
-      console.log('parsedResponse --> ' + JSON.stringify(parsedResponse));
+      //console.log('parsedResponse --> ' + JSON.stringify(parsedResponse));
 
       // Get the corresponding action based on stored index
       const actionIndex = request.details.actionIndex;
@@ -101,7 +101,9 @@ const showRequestDetails = async (requestId) => {
       selectedRequestDetails.value = {
         input: NetworkParser.beautifyJSON(request.details.inputs) || "No Input",
         IPResult: NetworkParser.beautifyJSON(IPResult) || "No IPResult",
-        options: NetworkParser.beautifyJSON(request.details.options) || "No Options",
+        options: request.details.options === "No Output"
+          ? "No Output"
+          : NetworkParser.beautifyJSON(request.details.options) || "No Options",
         elementName: request.details.methodName,
         actionType: request.details.actionType,
         actionIndex: actionIndex // Include for debugging
@@ -211,7 +213,7 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
           </div>
         </div>
         <!-- Options Editor -->
-        <div class="mt-4">
+        <div class="mt-4" v-if="selectedRequestDetails.options != 'No Output'">
           <div class="flex justify-between items-center">
             <InputLabel>Options :</InputLabel>
             <CopyButton :copyValue="selectedRequestDetails.options" class="mr-2" />
