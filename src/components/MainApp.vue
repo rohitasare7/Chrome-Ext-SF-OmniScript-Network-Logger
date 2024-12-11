@@ -51,19 +51,20 @@ const addRequestToList = (request) => {
 
     messageNode.actions.forEach((action, index) => {
       const extractedValues = ActionExtractor.extractActionDetails(action);
-      
+
       // Allow only specific actions
       if (!extractedValues || !extractedValues?.className) return;
       if (!Object.values(ACTION_TYPES).includes(extractedValues?.className)) return;
-      
+
       console.log(`extractedValues [${index}] --> ` + JSON.stringify(extractedValues));
-      
+
       const requestId = requests.value.length;
       requests.value.push({
         id: requestId,
         details: {
           ...extractedValues,
-          extractedResponseValues: {}
+          extractedResponseValues: {},
+          actionIndex: index // Store the action index for response mapping
         },
         rawRequest: request
       });
@@ -83,17 +84,19 @@ const showRequestDetails = async (requestId) => {
     const responseBody = await new Promise((resolve) => {
       request.rawRequest.getContent(resolve);
     });
-    
+
     if (responseBody) {
       const parsedResponse = NetworkParser.safeParseJSON(responseBody);
-      console.log('parsedResponse.actions --> '+JSON.stringify(parsedResponse.actions));
-      const returnValue = parsedResponse.actions?.[0]?.returnValue;
-      const parsedReturnValue = returnValue?.returnValue ?
-      NetworkParser.safeParseJSON(returnValue.returnValue) : {};
-      
-      const IPResult = request.details.className === ACTION_TYPES.INTEGRATION_PROCEDURE || request.details.className === ACTION_TYPES.FLEXCARD_RUNTIME ?
-        parsedReturnValue.IPResult : parsedReturnValue;
+      console.log('parsedResponse --> ' + JSON.stringify(parsedResponse));
 
+      // Get the corresponding action based on stored index
+      const actionIndex = request.details.actionIndex;
+      const returnValue = parsedResponse.actions?.[actionIndex]?.returnValue;
+
+      const parsedReturnValue = returnValue?.returnValue ?
+        NetworkParser.safeParseJSON(returnValue.returnValue) : {};
+
+      const IPResult = parsedReturnValue.IPResult ?? parsedReturnValue;
       displayDetails.value = true;
       selectedRequestDetails.value = {
         input: NetworkParser.beautifyJSON(request.details.inputs) || "No Input",
@@ -101,6 +104,7 @@ const showRequestDetails = async (requestId) => {
         options: NetworkParser.beautifyJSON(request.details.options) || "No Options",
         elementName: request.details.methodName,
         actionType: request.details.actionType,
+        actionIndex: actionIndex // Include for debugging
       };
 
       console.log('selectedRequestDetails.value --> ' + JSON.stringify(selectedRequestDetails.value));
