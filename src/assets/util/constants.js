@@ -30,21 +30,24 @@ export const ACTION_SOURCE_RULES = {
       type: ACTION_TYPES.DATA_RAPTOR,
       matchers: [
         'DefaultDROmniScriptIntegration',
-        'vlocity_cmt.DefaultDROmniScriptIntegration'
+        'vlocity_cmt.DefaultDROmniScriptIntegration',
+        'omnistudiocore.DefaultDROmniScriptIntegration'
       ]
     },
     {
       type: ACTION_TYPES.INTEGRATION_PROCEDURE,
       matchers: [
         'IntegrationProcedureService',
-        'vlocity_cmt.IntegrationProcedureService'
+        'vlocity_cmt.IntegrationProcedureService',
+        'omnistudiocore.IPService'
       ]
     },
     {
       type: ACTION_TYPES.HTTP_ACTION,
       matchers: [
         'DefaultOmniscriptApexRestService',
-        'vlocity_cmt.DefaultOmniscriptApexRestService'
+        'vlocity_cmt.DefaultOmniscriptApexRestService',
+        'omnistudiocore.DefaultOmniscriptApexRestService'
       ]
     },
     // Add more VLC class based rules here
@@ -57,4 +60,9 @@ export const ACTION_SOURCE_RULES = {
     }
     // Add more custom rules here
   ]
+};
+
+export const IGNORED_ACTIONS = {
+  UNDEFINED: 'undefined.undefined'
+  // Easy to add new action types here
 };

@@ -8,7 +8,7 @@ import CopyButton from './elements/CopyButton.vue';
 import ToastList from './elements/ToastList.vue';
 import { NetworkParser } from '@/assets/util/parser';
 import { ActionExtractor } from '@/assets/util/actionExtractor';
-import { ACTION_TYPES } from '@/assets/util/constants';
+import { ACTION_TYPES, IGNORED_ACTIONS } from '@/assets/util/constants';
 import ToggleLightDarkMode from './elements/ToggleLightDarkMode.vue';
 // Codemirror imports
 import { Codemirror } from 'vue-codemirror';
@@ -50,9 +50,14 @@ const addRequestToList = (request) => {
     if (!messageNode?.actions?.length) return;
 
     const extractedValues = ActionExtractor.extractActionDetails(messageNode.actions[0]);
+    
+    //allow only specific actions
+    if(!extractedValues || !extractedValues?.className) return;
+    if (!Object.values(ACTION_TYPES).includes(extractedValues?.className)) return;
+    //filter bad requests, methods
+    // if (Object.values(IGNORED_ACTIONS).includes(extractedValues.methodName)) return;
+    //Actual Data
     console.log('extractedValues --> ' + JSON.stringify(extractedValues));
-    if (!Object.values(ACTION_TYPES).includes(extractedValues.className)) return;
-
     const requestId = requests.value.length;
     requests.value.push({
       id: requestId,

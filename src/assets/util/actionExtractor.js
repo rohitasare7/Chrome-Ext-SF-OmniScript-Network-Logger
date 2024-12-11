@@ -31,7 +31,7 @@ export class ActionExtractor {
       }
     }
 
-    return 'Unknown';
+    //return 'Unknown';
   }
 
   static identifyDRType(methodName) {
@@ -39,6 +39,7 @@ export class ActionExtractor {
       invokeOutboundDR: DR_TYPES.EXTRACT,
       invokeInboundDR: DR_TYPES.LOAD,
       invokeDRTransform: DR_TYPES.TRANSFORM,
+      invokeTransformDR: DR_TYPES.TRANSFORM,
       invokeTurboExtractAction: DR_TYPES.TURBO_EXTRACT
     };
     return drTypeMap[methodName] || 'Unknown DR Type';
@@ -48,6 +49,8 @@ export class ActionExtractor {
     const params = action?.params || {};
     const innerParams = params?.params || {};
     const actionSource = this.identifyActionSource(action);
+
+    if(!actionSource) return null;
 
     const baseDetails = {
       actionType: actionSource,
@@ -69,8 +72,9 @@ export class ActionExtractor {
         };
       },
       [ACTION_TYPES.FLEXCARD]: () => {
-        const dsMap = NetworkParser.safeParseJSON(innerParams.dataSourceMap || '{}');
-        console.log('dsMap --> ' + JSON.stringify(dsMap));
+        const dsMap = NetworkParser.safeParseJSON(innerParams.dataSourceMap || null);
+        if (typeof dsMap !== 'object' || dsMap === null) return null;
+        console.log('dsMap --> ' + typeof dsMap + ' -- '+JSON.stringify(dsMap));
         if (dsMap.type === 'IntegrationProcedures') {
           return {
             ...baseDetails,
@@ -104,6 +108,7 @@ export class ActionExtractor {
       })
     };
     console.log('extractors --> ' + JSON.stringify(extractors));
+    if(!extractors || !extractors[actionSource]) return null;
     return (extractors[actionSource] || (() => ({
       ...baseDetails,
       inputs: NetworkParser.safeParseJSON(innerParams.input),
