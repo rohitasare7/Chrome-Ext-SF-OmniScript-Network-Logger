@@ -38,13 +38,14 @@ const copyToClipboardMain = () => {
 <template>
     <div class="relative inline-block">
         <div v-if="showCopiedMessage"
-            class="absolute top-0 right-8 w-44 ml-2 px-2 py-1 bg-green-200 border border-green-500/20 text-green-800 text-sm rounded-lg transition-opacity duration-1000 ease-out opacity-100 hover:opacity-0">
+            class="absolute top-0 right-4 w-44 ml-2 px-2 py-1 text-green-800 text-sm transition-opacity duration-1000 ease-out opacity-100 hover:opacity-0">
             Content Copied!
         </div>
-        <SVGIconButton :icon="copy_icon" :isSquare="false" :color="'blue'" @click="copyToClipboardMain"
-            title="Copy to Clipboard">
+        <copy_icon
+            class="cursor-pointer w-5 h-5 stroke-2 transition duration-300 fill-gray-400 hover:fill-gray-500 dark:fill-gray-300 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+            @click="copyToClipboardMain" title="Copy to Clipboard">
             <slot />
-        </SVGIconButton>
+        </copy_icon>
 
     </div>
 </template>
