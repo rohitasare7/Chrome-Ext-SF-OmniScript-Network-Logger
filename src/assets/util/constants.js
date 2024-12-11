@@ -5,6 +5,7 @@ export const ACTION_TYPES = {
   MATRIX_ACTION: 'Matrix Action',
   HTTP_ACTION: 'HTTP Action',
   FLEXCARD: 'FlexRuntime',
+  FLEXCARD_RUNTIME: 'FlexCardRuntime',
   // Easy to add new action types here
 };
 

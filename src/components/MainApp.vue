@@ -86,9 +86,9 @@ const showRequestDetails = async (requestId) => {
       const parsedResponse = NetworkParser.safeParseJSON(responseBody);
       const returnValue = parsedResponse.actions?.[0]?.returnValue;
       const parsedReturnValue = returnValue?.returnValue ?
-        NetworkParser.safeParseJSON(returnValue.returnValue) : {};
-
-      const IPResult = request.details.className === ACTION_TYPES.INTEGRATION_PROCEDURE ?
+      NetworkParser.safeParseJSON(returnValue.returnValue) : {};
+      
+      const IPResult = request.details.className === ACTION_TYPES.INTEGRATION_PROCEDURE || request.details.className === ACTION_TYPES.FLEXCARD_RUNTIME ?
         parsedReturnValue.IPResult : parsedReturnValue;
 
       displayDetails.value = true;

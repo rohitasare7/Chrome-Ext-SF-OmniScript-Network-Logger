@@ -50,7 +50,7 @@ export class ActionExtractor {
     const innerParams = params?.params || {};
     const actionSource = this.identifyActionSource(action);
 
-    if(!actionSource) return null;
+    if (!actionSource) return null;
 
     const baseDetails = {
       actionType: actionSource,
@@ -72,9 +72,9 @@ export class ActionExtractor {
         };
       },
       [ACTION_TYPES.FLEXCARD]: () => {
-        const dsMap = NetworkParser.safeParseJSON(innerParams.dataSourceMap || null);
+        const dsMap = NetworkParser.safeParseJSON(innerParams?.dataSourceMap || innerParams?.scope || null);
         if (typeof dsMap !== 'object' || dsMap === null) return null;
-        console.log('dsMap --> ' + typeof dsMap + ' -- '+JSON.stringify(dsMap));
+        console.log('dsMap --> ' + typeof dsMap + ' -- ' + JSON.stringify(dsMap));
         if (dsMap.type === 'IntegrationProcedures') {
           return {
             ...baseDetails,
@@ -90,6 +90,16 @@ export class ActionExtractor {
               orderBy: dsMap.value.orderBy,
               contextVariables: dsMap.value.contextVariables
             }
+          };
+        }
+        else if (innerParams?.globalKey) {
+          return {
+            ...baseDetails,
+            actionType: ACTION_TYPES.FLEXCARD_RUNTIME,
+            className: ACTION_TYPES.FLEXCARD,
+            methodName: innerParams?.globalKey,
+            inputs: NetworkParser.safeParseJSON(innerParams?.scope),
+            options: null,
           };
         }
         //return baseDetails;
@@ -108,7 +118,7 @@ export class ActionExtractor {
       })
     };
     console.log('extractors --> ' + JSON.stringify(extractors));
-    if(!extractors || !extractors[actionSource]) return null;
+    if (!extractors || !extractors[actionSource]) return null;
     return (extractors[actionSource] || (() => ({
       ...baseDetails,
       inputs: NetworkParser.safeParseJSON(innerParams.input),
