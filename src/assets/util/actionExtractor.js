@@ -88,7 +88,7 @@ export class ActionExtractor {
             }
           };
         }
-        return baseDetails;
+        //return baseDetails;
       },
       [ACTION_TYPES.INTEGRATION_PROCEDURE]: () => ({
         ...baseDetails,
