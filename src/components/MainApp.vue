@@ -60,7 +60,7 @@ const addRequestToList = (request) => {
       if (!extractedValues || !extractedValues?.className) return;
       if (!Object.values(ACTION_TYPES).includes(extractedValues?.className)) return;
 
-      console.log(`extractedValues [${index}] --> ` + JSON.stringify(extractedValues));
+      //console.log(`extractedValues [${index}] --> ` + JSON.stringify(extractedValues));
 
       const requestId = requests.value.length;
       requests.value.push({
@@ -113,7 +113,7 @@ const showRequestDetails = async (requestId) => {
         actionIndex: actionIndex // Include for debugging
       };
 
-      console.log('selectedRequestDetails.value --> ' + JSON.stringify(selectedRequestDetails.value));
+      //console.log('selectedRequestDetails.value --> ' + JSON.stringify(selectedRequestDetails.value));
     }
   } catch (error) {
     console.error('Failed to show request details:', error);

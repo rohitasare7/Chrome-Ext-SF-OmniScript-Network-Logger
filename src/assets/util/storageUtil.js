@@ -74,7 +74,7 @@ export function fetchRecordList() {
       recordListArr = [];
     } else {
       recordListArr = result.recordList;
-      console.log('helper arr result --> ' + JSON.stringify(recordListArr));
+      // console.log('helper arr result --> ' + JSON.stringify(recordListArr));
     }
   });
   return recordListArr;
@@ -83,7 +83,7 @@ export function fetchRecordList() {
 // Fetch Item Data
 export function fetchItemData(index) {
   const recArray = fetchRecordList();
-  console.log('recArray --> ' + JSON.stringify(recArray));
+  // console.log('recArray --> ' + JSON.stringify(recArray));
   return recArray.find((item) => item.id === index) || null;
 }
 
@@ -118,7 +118,7 @@ export const deleteRecord = async (id, domain) => {
 
       // Update the storage with the modified records
       chrome.storage.local.set({ [domain]: existingRecords }, () => {
-          console.log('Record with ID', id, 'deleted for domain:', domain);
+          // console.log('Record with ID', id, 'deleted for domain:', domain);
       });
       return true;
   } else {

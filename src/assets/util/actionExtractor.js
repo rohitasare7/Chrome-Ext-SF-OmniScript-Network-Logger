@@ -74,7 +74,7 @@ export class ActionExtractor {
       [ACTION_TYPES.FLEXCARD]: () => {
         const dsMap = NetworkParser.safeParseJSON(innerParams?.dataSourceMap || innerParams?.scope || null);
         if (typeof dsMap !== 'object' || dsMap === null) return null;
-        console.log('dsMap --> ' + typeof dsMap + ' -- ' + JSON.stringify(dsMap));
+        // console.log('dsMap --> ' + typeof dsMap + ' -- ' + JSON.stringify(dsMap));
         if (dsMap.type === 'IntegrationProcedures') {
           return {
             ...baseDetails,
@@ -117,7 +117,7 @@ export class ActionExtractor {
         methodName: `${innerParams.sClassName}.${innerParams.sMethodName}`
       })
     };
-    console.log('extractors --> ' + JSON.stringify(extractors));
+    // console.log('extractors --> ' + JSON.stringify(extractors));
     if (!extractors || !extractors[actionSource]) return null;
     return (extractors[actionSource] || (() => ({
       ...baseDetails,
