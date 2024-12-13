@@ -161,7 +161,7 @@ const toggleTheme = () => {
   cursor: pointer;
   background-color: hsl(48, 90%, 85%);
   border-radius: 25% / 50%;
-  box-shadow: 0 0 0 0.125em hsla(223, 90%, 55%, 0);
+  box-shadow: 0 0 0 .125em rgb(175 163 0 / 25%);
   padding: 0.25em;
   width: 3.5em;
   height: 1.8em;

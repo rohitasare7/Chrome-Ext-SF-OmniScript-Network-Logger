@@ -41,7 +41,7 @@ const emit = defineEmits(["remove"]);
 
         <div class="ml-3 text-sm font-normal">{{ props.message.text }}</div>
         <button @click="emit('remove')" type="button"
-            class="-mx-1.5 -my-1.5 ml-auto inline-flex h-8 w-8 rounded-lg bg-white p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-gray-300 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-white"
+            class="-mx-1 -my-1.5 ml-auto inline-flex h-8 w-8 rounded-lg bg-white p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-900 focus:ring-2 focus:ring-gray-300 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-white"
             data-dismiss-target="#toast-default" aria-label="Close">
             <span class="sr-only">Close</span>
             <svg aria-hidden="true" class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"

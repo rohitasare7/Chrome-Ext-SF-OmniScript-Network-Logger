@@ -30,7 +30,7 @@ defineProps({
             'bg-gray-100 hover:bg-gray-200 border-gray-300 dark:bg-zinc-600 dark:hover:bg-zinc-500 dark:border-gray-800 ': color == 'gray',
             '!rounded-md': isSquare,
         }">
-        <component class="w-4 h-4 stroke-2 transition duration-75" :is="icon" :class="{
+        <component class="w-5 h-5 stroke-2 transition duration-75" :is="icon" :class="{
             'fill-red-100 hover:fill-red-200 dark:fill-red-800 text-red-100 dark:text-red-700': color == 'red',
             'fill-green-700 hover:fill-green-800 dark:fill-green-100 text-green-100 dark:text-green-700': color == 'green',
             'fill-blue-700 hover:fill-blue-800 dark:fill-blue-100 text-blue-100 dark:text-blue-700': color == 'blue',

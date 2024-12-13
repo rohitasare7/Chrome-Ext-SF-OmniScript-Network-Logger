@@ -159,7 +159,8 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
   <ToastList />
 
   <div class="h-screen flex flex-col dark:bg-gray-800 z-10">
-    <div class="p-2 bg-gray-100 border-b dark:border-gray-700 flex space-x-4 items-center dark:bg-gray-800">
+    <div class="p-2 bg-gray-100 border-b dark:border-gray-700 flex space-x-4 items-center justify-between dark:bg-gray-800">
+      <div class="flex space-x-4 items-center ">
       <TextInput v-model="searchQuery" placeholder="Search by Action or Element"
         class="text-xs w-48 !py-1.5 text-gray-700 ml-2" />
       <select v-model="selectedFilterAction"
@@ -172,7 +173,10 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
       </select>
       <SVGIconButton @click="clearRequests" :icon="delete_icon" :isSquare="false" color="red" title="Clear All Requests"
         class="mr-2" />
+      </div>
+      <div>
         <ToggleLightDarkMode />
+      </div>
     </div>
 
     <!-- Main Content -->

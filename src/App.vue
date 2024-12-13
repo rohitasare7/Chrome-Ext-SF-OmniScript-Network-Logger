@@ -1,5 +1,4 @@
 <template>
-  <ToastList />
   <MainApp />
 </template>
 
@@ -8,7 +7,6 @@
 // import AppIndex from './components/AppIndex.vue';
 import MainApp from './components/MainApp.vue';
 import './assets/index.css';
-import ToastList from './components/elements/ToastList.vue';
 
 export default {
   name: 'App',
