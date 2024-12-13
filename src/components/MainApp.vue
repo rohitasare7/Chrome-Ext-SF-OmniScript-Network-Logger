@@ -8,9 +8,9 @@ import CopyButton from './elements/CopyButton.vue';
 import ToastList from './elements/ToastList.vue';
 import { NetworkParser } from '@/assets/util/parser';
 import { ActionExtractor } from '@/assets/util/actionExtractor';
-import { ACTION_TYPES, IGNORED_ACTIONS } from '@/assets/util/constants';
+import { ACTION_TYPES, ALLOWED_NETWORK_KEYWORDS } from '@/assets/util/constants';
 import ToggleLightDarkMode from './elements/ToggleLightDarkMode.vue';
-// Codemirror imports
+// Codemirror Editor Imports
 import { Codemirror } from 'vue-codemirror';
 import { json } from '@codemirror/lang-json';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -18,7 +18,6 @@ import { EditorView } from 'codemirror';
 
 const extensions = [json(), oneDark, EditorView.lineWrapping];
 
-// Codemirror EditorView instance ref
 const view = shallowRef();
 const requests = ref([]);
 const selectedRequestId = ref(null);
@@ -35,14 +34,19 @@ const handleReady = (payload) => {
   view.value = payload.view;
 };
 
+//Display 1st Request details after network requests are loaded
 watch(requests, (newRequests) => {
   if (newRequests.length === 1) {
     showRequestDetails(newRequests[0].id);
   }
 }, { deep: true });
 
+//Add Network Request to List
 const addRequestToList = (request) => {
   try {
+    // Check if the request URL contains any of the allowed keywords
+    if (!ALLOWED_NETWORK_KEYWORDS.some((keyword) => request.request.url.includes(keyword))) return;
+    //Perform actual parsing from Request
     const requestBody = request?.request?.postData?.text;
     if (!requestBody) return;
 
@@ -74,7 +78,7 @@ const addRequestToList = (request) => {
   }
 };
 
-
+//Show Request Details an click
 const showRequestDetails = async (requestId) => {
   selectedRequestId.value = requestId;
   const request = requests.value.find(req => req.id === requestId);
@@ -120,20 +124,22 @@ const showRequestDetails = async (requestId) => {
   }
 };
 
+//Filter Requests from Search, Dropdown
 const filteredRequests = computed(() => {
   const searchLower = searchQuery.value.toLowerCase();
   return requests.value.filter(request => {
     const matchesSearch =
-      request.details.className.toLowerCase().includes(searchLower) ||
+      request.details.actionType.toLowerCase().includes(searchLower) ||
       request.details.methodName.toLowerCase().includes(searchLower);
     const matchesFilter =
       selectedFilterAction.value === 'All' ||
-      request.details.className === selectedFilterAction.value;
+      request.details.actionType === selectedFilterAction.value;
 
     return matchesSearch && matchesFilter;
   });
 });
 
+//Create all data
 const clearRequests = () => {
   displayDetails.value = false;
   requests.value = [];
@@ -142,13 +148,14 @@ const clearRequests = () => {
     IPResult: "No IPResult"
   };
 };
+
 // Listen to Chrome DevTools Network events
 /* eslint-disable */
 chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
 </script>
 
 <template>
-  <!-- <ToggleLightDarkMode /> -->
+
   <ToastList />
 
   <div class="h-screen flex flex-col dark:bg-gray-800 z-10">
@@ -165,6 +172,7 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
       </select>
       <SVGIconButton @click="clearRequests" :icon="delete_icon" :isSquare="false" color="red" title="Clear All Requests"
         class="mr-2" />
+        <ToggleLightDarkMode />
     </div>
 
     <!-- Main Content -->

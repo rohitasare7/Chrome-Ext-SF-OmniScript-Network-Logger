@@ -25,7 +25,7 @@ const toggleTheme = () => {
 </script>
 
 <template>
-  <label for="theme" class="theme md:top-6 md:right-6 z-40 rounded-2xl dark:shadow-xl absolute top-1 right-1">
+  <label for="theme" class="theme md:top-6 md:right-6 z-40 rounded-2xl dark:shadow-xl ">
 
     <span class="theme__toggle-wrap ">
       <input id="theme" class="theme__toggle" type="checkbox" role="switch" name="theme" value="dark"

@@ -1,3 +1,5 @@
+export const ALLOWED_NETWORK_KEYWORDS = ['ApexAction.execute'];
+
 export const ACTION_TYPES = {
   DATA_RAPTOR: 'Data Raptor',
   INTEGRATION_PROCEDURE: 'Integration Procedure',
