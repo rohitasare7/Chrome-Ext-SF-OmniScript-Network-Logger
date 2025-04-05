@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Salesforce OmniStudio Network Logger",
   "description" : "Logs Network Requests from OmniStudio FlexCard, OmniScript for actions like Integration Procedure, Remote Actions, Data Raptors etc.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "permissions": ["clipboardWrite"],
   "devtools_page": "devtools.html",
   "icons": {

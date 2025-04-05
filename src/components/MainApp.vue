@@ -152,6 +152,51 @@ const clearRequests = () => {
 // Listen to Chrome DevTools Network events
 /* eslint-disable */
 chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
+
+// Dynamic code editor height
+// Heights for each editor
+const editorHeights = ref({
+  input: 100,
+  IPResult: 100,
+  options: 100
+});
+
+// Drag resizing logic
+const dragState = ref({
+  isDragging: false,
+  editorKey: null,
+  startY: 0,
+  startHeight: 0
+});
+
+const startDrag = (e, editorKey) => {
+  dragState.value = {
+    isDragging: true,
+    editorKey,
+    startY: e.clientY,
+    startHeight: editorHeights.value[editorKey]
+  };
+  document.body.classList.add('cursor-row-resize');
+  document.addEventListener('mousemove', duringDrag);
+  document.addEventListener('mouseup', stopDrag);
+};
+
+const duringDrag = (e) => {
+  if (!dragState.value.isDragging) return;
+  const dy = e.clientY - dragState.value.startY;
+  editorHeights.value[dragState.value.editorKey] = Math.max(
+    50,
+    dragState.value.startHeight + dy
+  );
+};
+
+const stopDrag = () => {
+  dragState.value.isDragging = false;
+  document.body.classList.remove('cursor-row-resize');
+  document.removeEventListener('mousemove', duringDrag);
+  document.removeEventListener('mouseup', stopDrag);
+};
+
 </script>
 
 <template>
@@ -159,20 +204,21 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
   <ToastList />
 
   <div class="h-screen flex flex-col dark:bg-gray-800 z-10">
-    <div class="p-2 bg-gray-100 border-b dark:border-gray-700 flex space-x-4 items-center justify-between dark:bg-gray-800">
+    <div
+      class="p-2 bg-gray-100 border-b dark:border-gray-700 flex space-x-4 items-center justify-between dark:bg-gray-800">
       <div class="flex space-x-4 items-center ">
-      <TextInput v-model="searchQuery" placeholder="Search by Action or Element"
-        class="text-xs w-48 !py-1.5 text-gray-700 ml-2" />
-      <select v-model="selectedFilterAction"
-        class="text-xs py-1.5 px-2 block w-48 text-gray-700 border border-gray-300 shadow-sm rounded-md focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400 dark:placeholder-gray-500 dark:focus:ring-gray-600 outline-indigo-500 dark:outline-none">
-        <option value="All">All Actions</option>
-        <option v-for="action in [...new Set(requests.map(req => req.details.actionType))]" :key="action"
-          :value="action">
-          {{ action }}
-        </option>
-      </select>
-      <SVGIconButton @click="clearRequests" :icon="delete_icon" :isSquare="false" color="red" title="Clear All Requests"
-        class="mr-2" />
+        <TextInput v-model="searchQuery" placeholder="Search by Action or Element"
+          class="text-xs w-48 !py-1.5 text-gray-700 ml-2" />
+        <select v-model="selectedFilterAction"
+          class="text-xs py-1.5 px-2 block w-48 text-gray-700 border border-gray-300 shadow-sm rounded-md focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400 dark:placeholder-gray-500 dark:focus:ring-gray-600 outline-indigo-500 dark:outline-none">
+          <option value="All">All Actions</option>
+          <option v-for="action in [...new Set(requests.map(req => req.details.actionType))]" :key="action"
+            :value="action">
+            {{ action }}
+          </option>
+        </select>
+        <SVGIconButton @click="clearRequests" :icon="delete_icon" :isSquare="false" color="red"
+          title="Clear All Requests" class="mr-2" />
       </div>
       <div>
         <ToggleLightDarkMode />
@@ -196,7 +242,11 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
 
       <!-- Details Section -->
       <div class="w-3/4 p-4 overflow-auto" v-if="displayDetails">
-        <InputLabel>Element : {{ selectedRequestDetails.elementName }}</InputLabel>
+        <!-- <InputLabel>Element : {{ selectedRequestDetails.elementName }}</InputLabel> -->
+        <div class="flex justify-start items-center">
+          <InputLabel>Element : {{ selectedRequestDetails.elementName }}</InputLabel>
+          <CopyButton :copyValue="selectedRequestDetails.elementName" class="ml-4" />
+        </div>
         <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4 mt-2">
           <!-- Input Editor -->
           <div class="w-full mr-3 lg:w-1/2">
@@ -206,11 +256,14 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
             </div>
             <div class="dark:border dark:border-gray-600 rounded-md mt-2">
               <codemirror v-model="selectedRequestDetails.input" placeholder="Your data will appear here"
-                :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden' }" :autofocus="true"
-                :indent-with-tab="true" :tab-size="2" :extensions="extensions" @ready="handleReady" />
+                :style="{ height: `${editorHeights.input}px`, borderRadius: '5px', overflow: 'hidden' }"
+                :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions" @ready="handleReady" />
+              <div
+                class="h-2 bg-gray-200 dark:bg-gray-700 rounded-b-lg border-t border-gray-300 dark:border-gray-600 relative cursor-row-resize hover:bg-gray-300 dark:hover:bg-gray-600"
+                @mousedown="(e) => startDrag(e, 'input')"></div>
             </div>
-
           </div>
+
           <!-- Output Editor -->
           <div class="w-full mr-3 lg:w-1/2">
             <div class="flex justify-between items-center">
@@ -219,11 +272,15 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
             </div>
             <div class="dark:border dark:border-gray-600 rounded-md mt-2">
               <codemirror v-model="selectedRequestDetails.IPResult" placeholder="Your data will appear here"
-                :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden' }" :autofocus="true"
-                :indent-with-tab="true" :tab-size="2" :extensions="extensions" @ready="handleReady" />
+                :style="{ height: `${editorHeights.IPResult}px`, borderRadius: '5px', overflow: 'hidden' }"
+                :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions" @ready="handleReady" />
+              <div
+                class="h-2 bg-gray-200 dark:bg-gray-700 rounded-b-lg border-t border-gray-300 dark:border-gray-600 relative cursor-row-resize hover:bg-gray-300 dark:hover:bg-gray-600"
+                @mousedown="(e) => startDrag(e, 'IPResult')"></div>
             </div>
           </div>
         </div>
+
         <!-- Options Editor -->
         <div class="mt-4" v-if="selectedRequestDetails.options != 'No Output'">
           <div class="flex justify-between items-center">
@@ -232,14 +289,21 @@ chrome.devtools.network.onRequestFinished.addListener(addRequestToList);
           </div>
           <div class="dark:border dark:border-gray-600 rounded-md mt-2">
             <codemirror v-model="selectedRequestDetails.options" placeholder="Your data will appear here"
-              :style="{ height: '100px', borderRadius: '5px', overflow: 'hidden' }" :autofocus="true"
-              :indent-with-tab="true" :tab-size="2" :extensions="extensions" @ready="handleReady" />
+              :style="{ height: `${editorHeights.options}px`, borderRadius: '5px', overflow: 'hidden' }"
+              :autofocus="true" :indent-with-tab="true" :tab-size="2" :extensions="extensions" @ready="handleReady" />
+            <div
+              class="h-2 bg-gray-200 dark:bg-gray-700 rounded-b-lg border-t border-gray-300 dark:border-gray-600 relative cursor-row-resize hover:bg-gray-300 dark:hover:bg-gray-600"
+              @mousedown="(e) => startDrag(e, 'options')"></div>
           </div>
         </div>
+
       </div>
+
     </div>
+
     <div class="p-4 space-y-2" v-else>
       <InputLabel>No requests found.</InputLabel>
     </div>
+
   </div>
 </template>
