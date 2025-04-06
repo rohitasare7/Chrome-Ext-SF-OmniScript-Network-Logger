@@ -2,6 +2,7 @@
 import { ref, shallowRef, watch, computed } from 'vue';
 import SVGIconButton from './elements/SVGIconButton.vue';
 import delete_icon from './elements/icons/delete_icon.vue';
+import help_icon from './elements/icons/help_icon.vue';
 import InputLabel from './elements/InputLabel.vue';
 import TextInput from './elements/TextInput.vue';
 import CopyButton from './elements/CopyButton.vue';
@@ -220,7 +221,11 @@ const stopDrag = () => {
         <SVGIconButton @click="clearRequests" :icon="delete_icon" :isSquare="false" color="red"
           title="Clear All Requests" class="mr-2" />
       </div>
-      <div>
+      <div class="flex space-x-4 items-center ">
+        <a href="https://youtu.be/gHMcgbs8QbA?si=yVJScUeClZ5ZFzrT" target="_blank">
+        <SVGIconButton :icon="help_icon" :isSquare="false" color="gray"
+          title="Need help with OmniScript Debugging? Click Me!"/>
+        </a>
         <ToggleLightDarkMode />
       </div>
     </div>
